@@ -21,7 +21,7 @@ namespace FunctionApp2
 
             try
             {
-                await PostToMastodon(s);
+                await Task.WhenAll(PostToMastodon(s), PostToTwitter(s));
             }
             catch (Exception ex)
             {
@@ -37,15 +37,21 @@ namespace FunctionApp2
                 s);
         }
 
-        //private static async Task PostToTwitter(string s)
-        //{
-        //    Tweetinvi.Auth.SetUserCredentials(
-        //        Environment.GetEnvironmentVariable("TwitterConsumerKey"),
-        //        Environment.GetEnvironmentVariable("TwitterConsumerSecret"),
-        //        Environment.GetEnvironmentVariable("TwitterTokenKey"),
-        //        Environment.GetEnvironmentVariable("TwitterTokenSecret"));
+        private static async Task PostToTwitter(string s)
+        {
+            string ck = Environment.GetEnvironmentVariable("TwitterConsumerKey");
+            string cs = Environment.GetEnvironmentVariable("TwitterConsumerSecret");
+            string tk = Environment.GetEnvironmentVariable("TwitterTokenKey");
+            string ts = Environment.GetEnvironmentVariable("TwitterTokenSecret");
 
-        //    await Tweetinvi.TweetAsync.PublishTweet(s);
-        //}
+            foreach (string str in new[] { ck, cs, tk, ts })
+            {
+                if (string.IsNullOrEmpty(str)) return;
+            }
+
+            Tweetinvi.Auth.SetUserCredentials(ck, cs, tk, ts);
+
+            await Tweetinvi.TweetAsync.PublishTweet(s);
+        }
     }
 }
